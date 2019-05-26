@@ -1,7 +1,9 @@
 import express from "express";
 import {join} from "path";
 import socket from "socket.io";
-import logger from "morgan"
+import logger from "morgan";
+import socketController from "./socketController";
+import events from "./events";
 
 const PORT = 4000;
 const app = express();
@@ -12,17 +14,12 @@ app.use(express.static(join(__dirname,"static")));
 app.use(logger("dev"));
 
 app.get('/',(req, res)=>{
-  res.render('home');
-})
+  res.render('home',{events:JSON.stringify(events)});
+});
 
 const handleListening = () => console.log(`Server start at port : ${PORT}`);
-
-
 const server = app.listen(PORT, handleListening);
 const io = socket.listen(server);
 
 
-io.on("connection",socket=>{
-  //setTimeout(()=>socket.broadcast.emit("hello"),5000);
-  socket.on('helloGuys',()=>console.log("hello guys"));
-})
+io.on("connection", socket => socketController(socket));
